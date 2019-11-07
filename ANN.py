@@ -1,4 +1,3 @@
-import numpy.random as rand
 import math
 
 def zero(x):
@@ -15,12 +14,11 @@ activation_functions_dict = {0: zero, 1: sigmoid, 2: math.tanh, 3: math.cos, 4: 
 x = [0,1]
 
 class ANN:
-    def __init__(self, input_size, neurons, weights, activation_functions):
+    def __init__(self, input_size, neurons, activation_functions):
         self.neurons = neurons
         self.activation_functions = activation_functions
         if len(neurons) != len(activation_functions):
             print("Error in ANN initialization, the number of layers and the number of activation functions should be the same")
-        self.weights = weights
 
     def calculate_net_u(self, x, k, y): #x is the input is the index of the neuron in the layer, y is the number of the layer
         u = 0
@@ -37,15 +35,8 @@ class ANN:
         for y in range(len(self.neurons)):
             x = self.layer_output(x, y)
         return x[0]
+    
+    def set_weights(self, weights):
+        self.weights = weights
 
-def generate_random_weights(input_size, neurons):
-    layers = []
-    first_layer = 2 * rand.random_sample((neurons[0], input_size)) - 1
-    layers.append(first_layer)
-    for i in range(len(neurons) - 1):
-        layer = 2 * rand.random_sample((neurons[i+1], neurons[i])) - 1
-        layers.append(layer)
-    return layers
-
-ann = ANN(len(x), [2,2,1], [], [1,1,1])
-print(ann.process(x))
+ann = ANN(len(x), [2,2,1], [1,1,1])
