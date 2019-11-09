@@ -4,14 +4,13 @@ def zero(x):
     return 0
 
 def sigmoid(x):
+    #print(x)
     return 1 / (1 + math.exp(-x))
 
 def gaussian(x):
     return math.exp(-(x**2 / 2))
 
 activation_functions_dict = {0: zero, 1: sigmoid, 2: math.tanh, 3: math.cos, 4: gaussian}
-
-x = [0,1]
 
 class ANN:
     def __init__(self, input_size, neurons, activation_functions):
@@ -38,5 +37,3 @@ class ANN:
     
     def set_weights(self, weights):
         self.weights = weights
-
-ann = ANN(len(x), [2,2,1], [1,1,1])
