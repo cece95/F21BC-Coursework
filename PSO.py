@@ -4,63 +4,18 @@ import pandas as pd
 import random
 import math
 import matplotlib.pyplot as plt
+from Particle import Particle
 
 #Generate random particle to init PSO algorithm
 def generate_random_particle(_id, input_size, neurons):
     position = []
     speed = []
-    first_layer = 2 * rand.random_sample((neurons[0], input_size)) - 1
-    first_layer_speed = np.zeros((neurons[0], input_size)) 
-    position.append(first_layer)
-    speed.append(first_layer_speed)
+    total_n_values = input_size * neurons[0] 
     for i in range(len(neurons) - 1):
-        layer = 2 * rand.random_sample((neurons[i+1], neurons[i])) - 1
-        position.append(layer)
-        s = np.zeros((neurons[i+1], neurons[i]))
-        speed.append(s)
+        total_n_values = total_n_values + neurons[i]*neurons[i+1] 
+    position = 2 * rand.random_sample(total_n_values)
+    speed = np.zeros(total_n_values)
     return Particle(_id, position, speed)
-
-#Class to represent the Particle
-class Particle:
-    def __init__(self, id_, position, speed):
-        self.id = id_
-        self.position = position
-        self.speed = speed
-        self.fitness = 0
-        self.best_fitness = math.inf 
-        self.best_fitness_position = None
-        self.informants = []
-
-    # Function to randomly assign a set of informants to the particle
-    def select_informants(self, swarm, n_informants):
-        data = [p for p in range(0, len(swarm))]
-        data.remove(self.id)
-        #print(data)
-        random.shuffle(data)
-        for i in data[:n_informants]:
-            self.informants.append(swarm[i])
-    
-    # Function to get the previous fittest position among the informants    
-    def get_previous_fittest_of_informants(self):
-        fittest_p = self.informants[0]
-        for p in self.informants:
-            if p.fitness < fittest_p.fitness:
-                fittest_p = p
-        return fittest_p.position
-
-    def update_position(self, epsilon):
-        for i in range(len(self.position)):
-            for j in range(len(self.position[i])):
-                for k in range(len(self.position[i][j])):
-                    tmp_pos = self.position[i][j][k] + epsilon * self.speed[i][j][k]
-                    # bouncing
-                    while tmp_pos < -1 or tmp_pos > 1:
-                        if tmp_pos > 1:
-                            tmp_pos = 2 - tmp_pos
-                        elif tmp_pos < -1:
-                            tmp_pos = -2 - tmp_pos
-                    
-                    self.position[i][j][k] = tmp_pos 
 
 
 class PSO:
@@ -87,6 +42,8 @@ class PSO:
         solution_found = False 
         while i < self.max_iterations and not solution_found:
             for particle in self.swarm:
+                print('{} | Fitness: {}'.format(particle.position, particle.fitness))
+            for particle in self.swarm:
                 self.assess_fitness(particle)
                 #print(particle.fitness)
                 if self.best is None or particle.fitness < self.best.best_fitness:
@@ -97,21 +54,17 @@ class PSO:
 
             x_swarm = self.get_fittest_position()
             for particle in self.swarm:
-                new_speed = [np.zeros(particle.speed[i].shape) for i in range(len(particle.speed))]
+                new_speed = np.zeros(particle.speed.shape)
                 #new_speed = np.zeros(particle.speed.shape)
                 x_fit = particle.best_fitness_position
                 x_inf = particle.get_previous_fittest_of_informants()
                 for l in range(len(particle.position)):
-                    for j in range(len(particle.position[l])):
-                        for k in range(len(particle.position[l][j])):
-                            b = random.uniform(0, self.beta)
-                            c = random.uniform(0, self.gamma)
-                            d = random.uniform(0, self.delta)
-                            new_speed[l][j][k] = self.alpha * particle.speed[l][j][k] + b * (x_fit[l][j][k] - particle.position[l][j][k]) + c * (x_inf[l][j][k] - particle.position[l][j][k]) + d * (x_swarm[l][j][k] - particle.position[l][j][k])
+                    b = random.uniform(0, self.beta)
+                    c = random.uniform(0, self.gamma)
+                    d = random.uniform(0, self.delta)
+                    new_speed[l] = self.alpha * particle.speed[l] + b * (x_fit[l] - particle.position[l]) + c * (x_inf[l] - particle.position[l]) + d * (x_swarm[l] - particle.position[l])
                 particle.speed = new_speed
-
-                for particle in self.swarm:
-                    particle.update_position(self.epsilon)
+                particle.update_position(self.epsilon)
 
             if self.best.fitness == 0:
                 print("Solution found")

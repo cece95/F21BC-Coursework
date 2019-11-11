@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 def zero(x):
     return 0
@@ -18,6 +19,11 @@ class ANN:
         self.activation_functions = activation_functions
         if len(neurons) != len(activation_functions):
             print("Error in ANN initialization, the number of layers and the number of activation functions should be the same")
+        w = []
+        w.append(np.zeros((neurons[0], input_size)))
+        for i in range(len(neurons) - 1):
+            w.append(np.zeros((neurons[i+1], neurons[i])))
+        self.weights = w
 
     def calculate_net_u(self, x, k, y): #x is the input is the index of the neuron in the layer, y is the number of the layer
         u = 0
@@ -36,4 +42,10 @@ class ANN:
         return x[0]
     
     def set_weights(self, weights):
-        self.weights = weights
+        k = 0
+        for y in range(len(self.weights)):
+            w_old = self.weights[y]
+            for i in range(len(w_old)):
+                for j in range(len(w_old[i])):
+                    w_old[i][j] = weights[k]
+                    k += 1
