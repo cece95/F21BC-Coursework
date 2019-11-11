@@ -10,12 +10,14 @@ from Particle import Particle
 def generate_random_particle(_id, input_size, neurons):
     position = []
     speed = []
-    total_n_values = input_size * neurons[0] 
+    n_neurons = sum(neurons)
+    n_weights = input_size * neurons[0]
     for i in range(len(neurons) - 1):
-        total_n_values = total_n_values + neurons[i]*neurons[i+1] 
+        n_weights = n_weights + neurons[i]*neurons[i+1] 
+    total_n_values = n_weights + n_neurons # give the PSO the possibility to select the activation functions 
     position = 2 * rand.random_sample(total_n_values)
     speed = np.zeros(total_n_values)
-    return Particle(_id, position, speed)
+    return Particle(_id, position, speed, n_weights, n_neurons)
 
 
 class PSO:
@@ -41,16 +43,17 @@ class PSO:
         i = 0
         solution_found = False 
         while i < self.max_iterations and not solution_found:
-            for particle in self.swarm:
-                print('{} | Fitness: {}'.format(particle.position, particle.fitness))
+            #for particle in self.swarm:
+                #print('{} | Fitness: {}'.format(particle.position, particle.fitness))
             for particle in self.swarm:
                 self.assess_fitness(particle)
-                #print(particle.fitness)
-                if self.best is None or particle.fitness < self.best.best_fitness:
-                    self.best = particle
                 if (particle.fitness < particle.best_fitness):
                     particle.best_fitness = particle.fitness
                     particle.best_fitness_position = particle.position
+
+                if self.best is None or particle.fitness < self.best.best_fitness:
+                    self.best = particle
+                    self.best_fitness = particle.fitness
 
             x_swarm = self.get_fittest_position()
             for particle in self.swarm:
@@ -72,13 +75,13 @@ class PSO:
 
             print("Best fitness so far: {}".format(self.best.best_fitness))
             i+=1 
-        
         self.plot_result()
 
     def assess_fitness(self, particle):
         #print('Testing particle {}'.format(particle.id))
         graph = []
-        self.ann.set_weights(particle.position)
+        old_fitness = particle.best_fitness
+        self.ann.set_values(particle.position)
         mse = 0
         n = len(self.test_set)
         #print(self.test_set)
@@ -91,7 +94,8 @@ class PSO:
             mse_i = (d - u) ** 2
             mse = mse + mse_i
         particle.fitness = mse / n
-        particle.best_fitness_graph = graph
+        if (particle.fitness < old_fitness):
+            particle.best_fitness_graph = graph
         #print(particle.fitness)
 
     def get_fittest_position(self):
