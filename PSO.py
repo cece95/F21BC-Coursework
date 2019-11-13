@@ -33,7 +33,7 @@ class PSO:
         self.best = None
         self.ann = ann
         self.max_iterations = max_iterations
-        self.test_set = pd.read_csv(test_set_path, sep='\t', header=None, names=['x', 'y'])
+        self.test_set = pd.read_csv(test_set_path, sep='\s+|\t+|\s+\t+|\t+\s+', header=None, names=['x', 'y'])
         self.n_informants = 6 #https://dl.acm.org/citation.cfm?doid=2330163.2330168
 
         for p in self.swarm:
@@ -84,6 +84,7 @@ class PSO:
         self.ann.set_values(particle.position)
         mse = 0
         n = len(self.test_set)
+        #print(self.test_set.head(5))
         #print(self.test_set)
         for _, row in self.test_set.iterrows():
             #print(row[1])
@@ -109,6 +110,8 @@ class PSO:
         x = self.test_set['x']
         y = self.test_set['y']
         g = self.best.best_fitness_graph
+
+        print(self.best.best_fitness_position)
 
         plt.plot(x,y,x,g)
         plt.show()
