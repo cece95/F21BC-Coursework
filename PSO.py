@@ -30,7 +30,6 @@ class PSO:
         self.delta = delta 
         self.epsilon = epsilon
         self.swarm = [generate_random_particle(id, input_size, ann.neurons) for id in range(swarm_size)]
-        #print(self.swarm)
         self.best = None
         self.ann = ann
         self.max_iterations = max_iterations
@@ -46,11 +45,7 @@ class PSO:
             p.select_informants(self.swarm, self.n_informants)
 
     def execute(self):
-        i = 0
-        solution_found = False 
-        while i < self.max_iterations and not solution_found:
-            #for particle in self.swarm:
-                #print('{} | Fitness: {}'.format(particle.position, particle.fitness))
+        for _ in range(self.max_iterations):
             for particle in self.swarm:
                 self.assess_fitness(particle)
                 if (particle.fitness < particle.best_fitness):
@@ -64,7 +59,6 @@ class PSO:
             x_swarm = self.get_fittest_position()
             for particle in self.swarm:
                 new_speed = np.zeros(particle.speed.shape)
-                #new_speed = np.zeros(particle.speed.shape)
                 x_fit = particle.best_fitness_position
                 x_inf = particle.get_previous_fittest_of_informants()
                 for l in range(len(particle.position)):
@@ -75,25 +69,16 @@ class PSO:
                 particle.speed = new_speed
                 particle.update_position(self.epsilon)
 
-            if self.best.fitness == 0:
-                print("Solution found")
-                solution_found = True
-
             print("Best fitness so far: {}".format(self.best.best_fitness))
-            i+=1 
         self.plot_result()
 
     def assess_fitness(self, particle):
-        #print('Testing particle {}'.format(particle.id))
         graph = []
         old_fitness = particle.best_fitness
         self.ann.set_values(particle.position)
         mse = 0
         n = len(self.test_set)
-        #print(self.test_set.head(5))
-        #print(self.test_set)
         for _, row in self.test_set.iterrows():
-            #print(row[1])
             if self.input_size == 1:
                 x_i = [row[0]]
                 d = row[1]
@@ -108,7 +93,6 @@ class PSO:
         particle.fitness = mse / n
         if (particle.fitness < old_fitness):
             particle.best_fitness_graph = graph
-        #print(particle.fitness)
 
     def get_fittest_position(self):
         fittest_p = self.swarm[0]
@@ -136,4 +120,3 @@ class PSO:
             ax.scatter(x1, x2, g)
 
         plt.show()
-
