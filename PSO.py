@@ -4,6 +4,7 @@ import pandas as pd
 import random
 import math
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from Particle import Particle
 
 #Generate random particle to init PSO algorithm
@@ -21,19 +22,24 @@ def generate_random_particle(_id, input_size, neurons):
 
 
 class PSO:
-    def __init__(self, swarm_size, alpha, beta, gamma, delta, epsilon, ann, max_iterations, test_set_path):
+    def __init__(self, swarm_size, alpha, beta, gamma, delta, epsilon, ann, max_iterations, test_set_path, input_size):
         self.swarm_size = swarm_size
         self.alpha = alpha
         self.beta = beta 
         self.gamma = gamma 
         self.delta = delta 
         self.epsilon = epsilon
-        self.swarm = [generate_random_particle(id, 1, ann.neurons) for id in range(swarm_size)]
+        self.swarm = [generate_random_particle(id, input_size, ann.neurons) for id in range(swarm_size)]
         #print(self.swarm)
         self.best = None
         self.ann = ann
         self.max_iterations = max_iterations
-        self.test_set = pd.read_csv(test_set_path, sep='\s+|\t+|\s+\t+|\t+\s+', header=None, names=['x', 'y'])
+        self.input_size = input_size
+        if input_size == 1:
+            columns = ['x', 'y']
+        else:
+            columns = ['x1', 'x2', 'y']
+        self.test_set = pd.read_csv(test_set_path, sep='\s+|\t+|\s+\t+|\t+\s+', header=None, names=columns)
         self.n_informants = 6 #https://dl.acm.org/citation.cfm?doid=2330163.2330168
 
         for p in self.swarm:
@@ -88,8 +94,13 @@ class PSO:
         #print(self.test_set)
         for _, row in self.test_set.iterrows():
             #print(row[1])
-            d = row[1]
-            x_i = [row[0]]
+            if self.input_size == 1:
+                x_i = [row[0]]
+                d = row[1]
+            else:
+                x_i = [row[0], row[1]]
+                d = row[2]
+
             u = self.ann.process(x_i)
             graph.append(u)
             mse_i = (d - u) ** 2
@@ -107,12 +118,22 @@ class PSO:
         return fittest_p.position
 
     def plot_result(self):
-        x = self.test_set['x']
-        y = self.test_set['y']
-        g = self.best.best_fitness_graph
+        if self.input_size == 1:
+            x = self.test_set['x']
+            y = self.test_set['y']
+            g = self.best.best_fitness_graph
 
-        print(self.best.best_fitness_position)
+            plt.plot(x,y,x,g)
+        else:
+            x1 = self.test_set['x1']
+            x2 = self.test_set['x2']
+            y = self.test_set['y']
+            g = self.best.best_fitness_graph
 
-        plt.plot(x,y,x,g)
+            fig = plt.figure()
+            ax = fig.gca(projection='3d')
+            ax.scatter(x1, x2, y)
+            ax.scatter(x1, x2, g)
+
         plt.show()
 

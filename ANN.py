@@ -14,7 +14,7 @@ def gaussian(x):
 def identity(x):
     return x
 
-activation_functions_dict = {0: zero, 1: identity, 2: sigmoid, 3: math.tanh, 4: math.cos, 5: gaussian}
+activation_functions_dict = {0: zero, 1: sigmoid, 2: math.tanh, 3: math.cos, 4: gaussian} #5: identity
 
 class ANN:
     def __init__(self, input_size, neurons):
