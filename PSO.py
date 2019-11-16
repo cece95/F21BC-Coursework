@@ -5,6 +5,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.animation import FuncAnimation
 from Particle import Particle
 
 #Generate random particle to init PSO algorithm
@@ -45,8 +46,16 @@ class PSO:
             p.select_informants(self.swarm, self.n_informants)
 
     def execute(self):
-        for _ in range(self.max_iterations):
-            for particle in self.swarm:
+        fig, axes = plt.subplots()
+        anim = FuncAnimation(fig, update_plot, frames=self.max_iterations)
+
+    def update_plot(self):
+        self.pso_step()
+        self.plot_result()
+
+
+    def pso_step(self):
+        for particle in self.swarm:
                 self.assess_fitness(particle)
                 if (particle.fitness < particle.best_fitness):
                     particle.best_fitness = particle.fitness
@@ -70,7 +79,6 @@ class PSO:
                 particle.update_position(self.epsilon)
 
             print("Best fitness so far: {}".format(self.best.best_fitness))
-        self.plot_result()
 
     def assess_fitness(self, particle):
         graph = []
@@ -107,16 +115,13 @@ class PSO:
             y = self.test_set['y']
             g = self.best.best_fitness_graph
 
-            plt.plot(x,y,x,g)
+            axes.plot(x,y,x,g)
         else:
             x1 = self.test_set['x1']
             x2 = self.test_set['x2']
             y = self.test_set['y']
             g = self.best.best_fitness_graph
 
-            fig = plt.figure()
             ax = fig.gca(projection='3d')
             ax.scatter(x1, x2, y)
             ax.scatter(x1, x2, g)
-
-        plt.show()
