@@ -8,6 +8,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 from Particle import Particle
 
+fig, axes = plt.subplots(1,3, figsize=(20,10))
+
 #Generate random particle to init PSO algorithm
 def generate_random_particle(_id, input_size, neurons):
     position = []
@@ -41,20 +43,22 @@ class PSO:
             columns = ['x1', 'x2', 'y']
         self.test_set = pd.read_csv(test_set_path, sep='\s+|\t+|\s+\t+|\t+\s+', header=None, names=columns)
         self.n_informants = 6 #https://dl.acm.org/citation.cfm?doid=2330163.2330168
+        self.error = []
+        self.steps = []
+        self.best_record = []
 
         for p in self.swarm:
             p.select_informants(self.swarm, self.n_informants)
 
     def execute(self):
-        fig, axes = plt.subplots()
-        anim = FuncAnimation(fig, update_plot, frames=self.max_iterations)
+        anim = FuncAnimation(fig, self.update_plot, frames=self.max_iterations, repeat=False)
+        plt.show()
 
-    def update_plot(self):
-        self.pso_step()
+    def update_plot(self, i):
+        self.pso_step(i)
         self.plot_result()
 
-
-    def pso_step(self):
+    def pso_step(self, i):
         for particle in self.swarm:
                 self.assess_fitness(particle)
                 if (particle.fitness < particle.best_fitness):
@@ -65,20 +69,23 @@ class PSO:
                     self.best = particle
                     self.best_fitness = particle.fitness
 
-            x_swarm = self.get_fittest_position()
-            for particle in self.swarm:
-                new_speed = np.zeros(particle.speed.shape)
-                x_fit = particle.best_fitness_position
-                x_inf = particle.get_previous_fittest_of_informants()
-                for l in range(len(particle.position)):
-                    b = random.uniform(0, self.beta)
-                    c = random.uniform(0, self.gamma)
-                    d = random.uniform(0, self.delta)
-                    new_speed[l] = self.alpha * particle.speed[l] + b * (x_fit[l] - particle.position[l]) + c * (x_inf[l] - particle.position[l]) + d * (x_swarm[l] - particle.position[l])
-                particle.speed = new_speed
-                particle.update_position(self.epsilon)
+        x_swarm = self.get_fittest_position()
+        for particle in self.swarm:
+            new_speed = np.zeros(particle.speed.shape)
+            x_fit = particle.best_fitness_position
+            x_inf = particle.get_previous_fittest_of_informants()
+            for l in range(len(particle.position)):
+                b = random.uniform(0, self.beta)
+                c = random.uniform(0, self.gamma)
+                d = random.uniform(0, self.delta)
+                new_speed[l] = self.alpha * particle.speed[l] + b * (x_fit[l] - particle.position[l]) + c * (x_inf[l] - particle.position[l]) + d * (x_swarm[l] - particle.position[l])
+            particle.speed = new_speed
+            particle.update_position(self.epsilon)
 
-            print("Best fitness so far: {}".format(self.best.best_fitness))
+        self.steps.append(i+1)
+        self.error.append(self.best_fitness)
+        self.best_record.append(self.best.id)
+        print("{} | Best fitness so far: {}".format(i+1, self.best_fitness))
 
     def assess_fitness(self, particle):
         graph = []
@@ -110,18 +117,35 @@ class PSO:
         return fittest_p.position
 
     def plot_result(self):
+        # plot functions
+        axes[0].clear()
+        axes[1].clear()
+        axes[2].clear()
+        
+        axes[0].title.set_text('Functions')
+        axes[1].title.set_text('MSE')
+        axes[2].title.set_text('Best Particle')
+
         if self.input_size == 1:
             x = self.test_set['x']
             y = self.test_set['y']
             g = self.best.best_fitness_graph
 
-            axes.plot(x,y,x,g)
+            axes[0].plot(x,y,x,g)
         else:
             x1 = self.test_set['x1']
             x2 = self.test_set['x2']
             y = self.test_set['y']
             g = self.best.best_fitness_graph
 
-            ax = fig.gca(projection='3d')
+            ax = axes[0].gca(projection='3d')
             ax.scatter(x1, x2, y)
             ax.scatter(x1, x2, g)
+
+        #plot error
+        axes[1].set_ylim([0, 0.1])
+        axes[1].plot(self.steps, self.error)
+
+        axes[2].plot(self.steps, self.best_record)
+        axes[2].set_ylim([0, self.swarm_size])
+        
