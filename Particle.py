@@ -33,6 +33,7 @@ class Particle:
 
     def update_position(self, epsilon):
         new_position = self.position + self.speed * epsilon
+        new_position2 = self.position + self.speed * epsilon * 2
         for i in range(len(new_position)):
             if (i < self.n_weights):
                 tmp_pos = new_position[i]
@@ -44,15 +45,15 @@ class Particle:
                     new_position[i] = tmp_pos
             
             if (i >= self.n_weights):
-                tmp_pos = new_position[i]
-                while tmp_pos <= 0 or tmp_pos >= 5:    
-                    if tmp_pos >= 5:
+                tmp_pos = new_position2[i]
+                while tmp_pos <= 0 or tmp_pos >= 10:    
+                    if tmp_pos >= 10:
                         tmp_pos = 10 - tmp_pos
                     elif tmp_pos <= 0 :
                         tmp_pos = 0 - tmp_pos
                     
-                    if tmp_pos == 5:
-                        tmp_pos = 4
+                    if tmp_pos == 10:
+                        tmp_pos = 9
 
                     new_position[i] = tmp_pos 
         self.position = new_position

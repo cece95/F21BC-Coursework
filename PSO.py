@@ -18,14 +18,14 @@ def generate_random_particle(_id, input_size, neurons):
     n_weights = input_size * neurons[0]
     for i in range(len(neurons) - 1):
         n_weights = n_weights + neurons[i]*neurons[i+1] 
-    total_n_values = n_weights + n_neurons # give the PSO the possibility to select the activation functions 
+    total_n_values = n_weights + n_neurons + len(neurons) # give the PSO the possibility to select the activation functions and bias 
     position = 2 * rand.random_sample(total_n_values)
     speed = np.zeros(total_n_values)
     return Particle(_id, position, speed, n_weights, n_neurons)
 
 
 class PSO:
-    def __init__(self, swarm_size, alpha, beta, gamma, delta, epsilon, ann, max_iterations, test_set_path, input_size):
+    def __init__(self, swarm_size, n_informants, alpha, beta, gamma, delta, epsilon, ann, max_iterations, test_set_path, input_size):
         self.swarm_size = swarm_size
         self.alpha = alpha
         self.beta = beta 
@@ -42,7 +42,7 @@ class PSO:
         else:
             columns = ['x1', 'x2', 'y']
         self.test_set = pd.read_csv(test_set_path, sep='\s+|\t+|\s+\t+|\t+\s+', header=None, names=columns)
-        self.n_informants = 6 #https://dl.acm.org/citation.cfm?doid=2330163.2330168
+        self.n_informants = n_informants
         self.error = []
         self.steps = []
         self.best_record = []
@@ -75,8 +75,8 @@ class PSO:
             x_fit = particle.best_fitness_position
             x_inf = particle.get_previous_fittest_of_informants()
             for l in range(len(particle.position)):
-                b = random.uniform(0, self.beta)
-                c = random.uniform(0, self.gamma)
+                b = random.uniform(0.000001, self.beta)
+                c = random.uniform(0.000001, self.gamma)
                 d = random.uniform(0, self.delta)
                 new_speed[l] = self.alpha * particle.speed[l] + b * (x_fit[l] - particle.position[l]) + c * (x_inf[l] - particle.position[l]) + d * (x_swarm[l] - particle.position[l])
             particle.speed = new_speed
