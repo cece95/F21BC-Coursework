@@ -8,6 +8,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 from Particle import Particle
 
+#adaptive inertia https://www.researchgate.net/publication/324558373_Particle_Swarm_Optimization_A_survey_of_historical_and_recent_developments_with_hybridization_perspectives
+# Point 4.1.2 i adapted the formula modifying the last inertia_max in inertia_min
+# This method allows the PSO to first push on exploration and then on exploitation
+
 #Initialization of the plots
 fig = plt.figure(figsize=(20,10))
 axes = [None, None, None]
@@ -22,24 +26,26 @@ def generate_random_particle(_id, input_size, neurons):
         n_weights = n_weights + neurons[i]*neurons[i+1] 
     total_n_values = n_weights + (2* n_neurons) # give the PSO the possibility to select the activation functions and bias 
     position = 2 * rand.random_sample(total_n_values) - 1
-    speed = 2 * rand.random_sample(total_n_values) - 1
+    speed = np.zeros(total_n_values)
     return Particle(_id, position, speed, n_weights, n_neurons)
 
 
 class PSO:
     """Class that implements the PSO algorithm"""
-    def __init__(self, swarm_size, n_informants, alpha, beta, gamma, delta, epsilon, ann, max_iterations, test_set_path, input_size):
+    def __init__(self, swarm_size, n_informants, alpha_max, alpha_min, beta, gamma, delta, epsilon, ann, max_iterations, test_set_path, input_size):
         axes[1] = fig.add_subplot(132)
         axes[2] = fig.add_subplot(133)
         
         self.swarm_size = swarm_size
-        self.alpha = alpha
+        self.alpha_max = alpha_max
+        self.alpha_min = alpha_min
         self.beta = beta 
         self.gamma = gamma 
         self.delta = delta 
         self.epsilon = epsilon
         self.swarm = [generate_random_particle(id, input_size, ann.neurons) for id in range(swarm_size)] # init swarm
         self.best = None
+        self.best_fitness = 1000
         self.ann = ann
         self.max_iterations = max_iterations
         self.input_size = input_size
@@ -69,38 +75,36 @@ class PSO:
 
     def step(self, i):
         """ Wrapper to execute one step of the PSO algorithm and plot the indermediate results"""
-        self.pso_step(i)
+        self.pso_step(i+1)
         self.plot_result()
 
     def pso_step(self, i):
         """ Execution of a step of the PSO algorithm as explained in the lectures slides """
         for particle in self.swarm:
                 self.assess_fitness(particle)
-                if (particle.fitness < particle.best_fitness):
-                    particle.best_fitness = particle.fitness
-                    particle.best_fitness_position = particle.position
-
-                if self.best is None or particle.fitness < self.best.best_fitness:
+                if self.best is None or particle.fitness < self.best_fitness:
                     self.best = particle
                     self.best_fitness = particle.fitness
+                    self.best_fitness_position = particle.best_fitness_position
 
-        x_swarm = self.get_fittest_position()
+        x_swarm = self.best_fitness_position
         for particle in self.swarm:
             new_speed = np.zeros(particle.speed.shape)
             x_fit = particle.best_fitness_position
             x_inf = particle.get_previous_fittest_of_informants()
             for l in range(len(particle.position)):
+                a = (self.alpha_max - self.alpha_min) * ((self.max_iterations - i) / self.max_iterations) + self.alpha_min
                 b = random.uniform(0, self.beta)
                 c = random.uniform(0, self.gamma)
                 d = random.uniform(0, self.delta)
-                new_speed[l] = self.alpha * particle.speed[l] + b * (x_fit[l] - particle.position[l]) + c * (x_inf[l] - particle.position[l]) + d * (x_swarm[l] - particle.position[l])
+                new_speed[l] = a * particle.speed[l] + b * (x_fit[l] - particle.position[l]) + c * (x_inf[l] - particle.position[l]) + d * (x_swarm[l] - particle.position[l])
             particle.speed = new_speed
             particle.update_position(self.epsilon)
 
-        self.steps.append(i+1)
+        self.steps.append(i)
         self.error.append(self.best_fitness)
         self.best_record.append(self.best.id)
-        print("{} | Best fitness so far: {}\n {}".format(i+1, self.best_fitness, self.best.position))
+        print("{} | Best fitness so far: {}".format(i+1, self.best_fitness))
 
     def assess_fitness(self, particle):
         """ Function to assess the fitness of a particle using MSE"""
@@ -122,16 +126,11 @@ class PSO:
             mse_i = (d - u) ** 2
             mse = mse + mse_i
         particle.fitness = mse / n
+
         if (particle.fitness < old_fitness):
             particle.best_fitness_graph = graph
-
-    def get_fittest_position(self):
-        """ Function to get the position of the fittest particle in the swarm """
-        fittest_p = self.swarm[0]
-        for p in self.swarm:
-            if p.fitness < fittest_p.fitness:
-                fittest_p = p
-        return fittest_p.position
+            particle.best_fitness = particle.fitness
+            particle.best_fitness_position = particle.position
 
     def plot_result(self):
         "Function to plot the intermediate results of the PSO algorithm"

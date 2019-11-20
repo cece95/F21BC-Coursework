@@ -27,13 +27,14 @@ class Particle:
         """Function to get the previous fittest position among the informants"""
         fittest_p = self.informants[0]
         for p in self.informants:
-            if p.fitness < fittest_p.fitness:
+            if p.best_fitness < fittest_p.best_fitness:
                 fittest_p = p
         return fittest_p.position
 
     def update_position(self, epsilon):
         """Function to update the position of a particle at each step of the PSO"""
         new_position = self.position + self.speed * epsilon
+        # bouncing
         for i in range(len(new_position)):
             if (i < self.n_weights):
                 tmp_pos = new_position[i]
