@@ -37,11 +37,9 @@ class ANN:
     """Class implementing the neural network"""
     def __init__(self, input_size, neurons):
         self.neurons = neurons
-        self.activation_functions = [np.zeros(n) for n in neurons] #placeholder for activation functions
+        self.activation_functions = [np.zeros(n) for n in neurons[:-1]] #placeholder for activation functions
         self.bias = [np.zeros(n) for n in neurons] # placeholder for biases
-        if len(neurons) != len(self.activation_functions):
-            print("Error in ANN initialization, the number of layers and the number of activation functions should be the same")
-        
+        print(len(self.activation_functions))
         # generate placeholders for weights
         w = []
         w.append(np.zeros((neurons[0], input_size)))
@@ -62,9 +60,12 @@ class ANN:
         """ Function to calculate the output of layer y that has as input x"""
         res = []
         for k in range(self.neurons[y]):
-            function_index = self.activation_functions[y][k]
-            f = activation_functions_dict[function_index]
-            res.append(f(self.calculate_net_u(x, k, y)))
+            if (y != (len(self.neurons) - 1)):
+                function_index = self.activation_functions[y][k]
+                f = activation_functions_dict[function_index]
+                res.append(f(self.calculate_net_u(x, k, y)))
+            else:
+                res.append(self.calculate_net_u(x, k, y))
         return res
 
     def process(self, x):
@@ -82,7 +83,7 @@ class ANN:
                 for j in range(len(w_old[i])):
                     w_old[i][j] = values[k]
                     k += 1
-        
+
         for y in range(len(self.activation_functions)):
             af = self.activation_functions[y]
             for i in range(len(af)):

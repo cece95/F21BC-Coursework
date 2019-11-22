@@ -24,7 +24,7 @@ def generate_random_particle(_id, input_size, neurons):
     n_weights = input_size * neurons[0]
     for i in range(len(neurons) - 1):
         n_weights = n_weights + neurons[i]*neurons[i+1] 
-    total_n_values = n_weights + (2* n_neurons) # give the PSO the possibility to select the activation functions and bias 
+    total_n_values = n_weights + (2* n_neurons) - 1 # give the PSO the possibility to select the activation functions and bias, subtract one because the activation function is not needed for the last neuron 
     position = 2 * rand.random_sample(total_n_values) - 1
     speed = np.zeros(total_n_values)
     return Particle(_id, position, speed, n_weights, n_neurons)
@@ -104,7 +104,7 @@ class PSO:
         self.steps.append(i)
         self.error.append(self.best_fitness)
         self.best_record.append(self.best.id)
-        print("{} | Best fitness so far: {}".format(i+1, self.best_fitness))
+        print("{} | Best fitness so far: {}".format(i, self.best_fitness))
 
     def assess_fitness(self, particle):
         """ Function to assess the fitness of a particle using MSE"""
@@ -138,9 +138,15 @@ class PSO:
         axes[0].clear()
         axes[1].clear()
         axes[2].clear()
+        
         axes[0].title.set_text('Functions')
         axes[1].title.set_text('MSE')
+        axes[1].set_xlabel('Number of iterations')
+        axes[1].set_ylabel('Mean Squared Error')
         axes[2].title.set_text('Best Particle')
+        axes[2].set_xlabel('Number of iterations')
+        axes[2].set_ylabel('Best Particle ID')
+
 
         #plot the results in a different manner depending on the input size
         if self.input_size == 1:
@@ -148,15 +154,18 @@ class PSO:
             y = self.test_set['y']
             g = self.best.best_fitness_graph
 
-            axes[0].plot(x,y,x,g)
+            axes[0].plot(x,g, label='Approximated Function')
+            axes[0].plot(x,y, label='Desidered Function')
+            axes[0].legend()
         else:
             x1 = self.test_set['x1']
             x2 = self.test_set['x2']
             y = self.test_set['y']
             g = self.best.best_fitness_graph
 
-            axes[0].scatter(x1, x2, y)
-            axes[0].scatter(x1, x2, g)
+            axes[0].scatter(x1, x2, y, label='Desidered Function')
+            axes[0].scatter(x1, x2, g, label='Approximated Function')
+            axes[0].legend()
 
         #plot error
         axes[1].set_ylim([0, 0.1])
