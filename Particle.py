@@ -45,7 +45,7 @@ class Particle:
                         tmp_pos = -2 - tmp_pos
                     new_position[i] = tmp_pos
             
-            if (i >= self.n_weights and i < self.n_weights + self.n_neurons - 1):
+            if (i >= self.n_weights and i < self.n_weights + self.n_neurons):
                 tmp_pos = new_position[i]
                 while tmp_pos <= 0 or tmp_pos >= 10:    
                     if tmp_pos >= 10:
@@ -58,7 +58,7 @@ class Particle:
 
                     new_position[i] = tmp_pos 
             
-            if i >= self.n_weights + self.n_neurons - 1:
+            if i >= self.n_weights + self.n_neurons:
                 tmp_pos = new_position[i]
                 while tmp_pos < -1 or tmp_pos > 1:    
                     if tmp_pos > 1:

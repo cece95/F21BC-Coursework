@@ -10,8 +10,6 @@ data = 'Data/1in_sine.txt'
 
 input_size = 1
 
-#alpha (inertia weight) between 0.4 and 0.9 https://www.researchgate.net/post/What_are_the_best_PSO_parameter_values
-
 ann = ANN(input_size, [12,1])
 pso = PSO(50, 10, 0.9, 0.4, 2.5, 0, 1.5, 1, ann, 1000, data, input_size)
 

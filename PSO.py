@@ -20,7 +20,7 @@ def generate_random_particle(_id, input_size, neurons):
     n_weights = input_size * neurons[0]
     for i in range(len(neurons) - 1):
         n_weights = n_weights + neurons[i]*neurons[i+1] 
-    total_n_values = n_weights + (2* n_neurons) - 1 # give the PSO the possibility to select the activation functions and bias, subtract one because the activation function is not needed for the last neuron 
+    total_n_values = n_weights + (2* n_neurons) # give the PSO the possibility to select the activation functions and bias, subtract one if the activation function is not needed for the last neuron 
     position = 2 * rand.random_sample(total_n_values) - 1
     speed = np.zeros(total_n_values)
     return Particle(_id, position, speed, n_weights, n_neurons)

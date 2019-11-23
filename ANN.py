@@ -37,7 +37,7 @@ class ANN:
     """Class implementing the neural network"""
     def __init__(self, input_size, neurons):
         self.neurons = neurons
-        self.activation_functions = [np.zeros(n) for n in neurons[:-1]] #placeholder for activation functions
+        self.activation_functions = [np.zeros(n) for n in neurons] #placeholder for activation functions
         self.bias = [np.zeros(n) for n in neurons] # placeholder for biases
         # generate placeholders for weights
         w = []
@@ -59,12 +59,9 @@ class ANN:
         """ Function to calculate the output of layer y that has as input x"""
         res = []
         for k in range(self.neurons[y]):
-            if (y != (len(self.neurons) - 1)):
-                function_index = self.activation_functions[y][k]
-                f = activation_functions_dict[function_index]
-                res.append(f(self.calculate_net_u(x, k, y)))
-            else:
-                res.append(self.calculate_net_u(x, k, y))
+            function_index = self.activation_functions[y][k]
+            f = activation_functions_dict[function_index]
+            res.append(f(self.calculate_net_u(x, k, y)))
         return res
 
     def process(self, x):
