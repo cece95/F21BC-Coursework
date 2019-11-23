@@ -39,7 +39,6 @@ class ANN:
         self.neurons = neurons
         self.activation_functions = [np.zeros(n) for n in neurons[:-1]] #placeholder for activation functions
         self.bias = [np.zeros(n) for n in neurons] # placeholder for biases
-        print(len(self.activation_functions))
         # generate placeholders for weights
         w = []
         w.append(np.zeros((neurons[0], input_size)))

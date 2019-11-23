@@ -8,10 +8,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 from Particle import Particle
 
-#adaptive inertia https://www.researchgate.net/publication/324558373_Particle_Swarm_Optimization_A_survey_of_historical_and_recent_developments_with_hybridization_perspectives
-# Point 4.1.2 i adapted the formula modifying the last inertia_max in inertia_min
-# This method allows the PSO to first push on exploration and then on exploitation
-
 #Initialization of the plots
 fig = plt.figure(figsize=(20,10))
 axes = [None, None, None]
@@ -45,7 +41,7 @@ class PSO:
         self.epsilon = epsilon
         self.swarm = [generate_random_particle(id, input_size, ann.neurons) for id in range(swarm_size)] # init swarm
         self.best = None
-        self.best_fitness = 1000
+        self.best_fitness = 1000 #initialise the error to an high value
         self.ann = ann
         self.max_iterations = max_iterations
         self.input_size = input_size
@@ -139,6 +135,7 @@ class PSO:
         axes[1].clear()
         axes[2].clear()
         
+        #Reconstruct the cleared plots
         axes[0].title.set_text('Functions')
         axes[1].title.set_text('MSE')
         axes[1].set_xlabel('Number of iterations')
